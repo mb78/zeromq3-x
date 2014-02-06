@@ -77,9 +77,12 @@ zmq::epoll_t::handle_t zmq::epoll_t::add_fd (fd_t fd_, i_poll_events *events_)
 void zmq::epoll_t::rm_fd (handle_t handle_)
 {
     poll_entry_t *pe = (poll_entry_t*) handle_;
-    int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
-    errno_assert (rc != -1);
-    pe->fd = retired_fd;
+    if (pe->fd!=retired_fd) // attempt to avoid crash (shutdown or some race condition?)
+    {
+        int rc = epoll_ctl (epoll_fd, EPOLL_CTL_DEL, pe->fd, &pe->ev);
+        errno_assert (rc != -1);
+        pe->fd = retired_fd;
+    }
     retired.push_back (pe);
 
     //  Decrease the load metric of the thread.

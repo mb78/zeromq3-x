@@ -72,7 +72,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
         int rc = setsockopt (s, SOL_SOCKET, SO_SNDBUF,
             (char*) &options.sndbuf, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
-		wsa_assert (rc != SOCKET_ERROR);
+        wsa_assert (rc != SOCKET_ERROR);
 #else
         errno_assert (rc == 0);
 #endif
@@ -81,7 +81,7 @@ zmq::stream_engine_t::stream_engine_t (fd_t fd_, const options_t &options_, cons
         int rc = setsockopt (s, SOL_SOCKET, SO_RCVBUF,
             (char*) &options.rcvbuf, sizeof (int));
 #ifdef ZMQ_HAVE_WINDOWS
-		wsa_assert (rc != SOCKET_ERROR);
+        wsa_assert (rc != SOCKET_ERROR);
 #else
         errno_assert (rc == 0);
 #endif
@@ -102,13 +102,13 @@ zmq::stream_engine_t::~stream_engine_t ()
 
     if (s != retired_fd) {
 #ifdef ZMQ_HAVE_WINDOWS
-		int rc = closesocket (s);
-		wsa_assert (rc != SOCKET_ERROR);
+        int rc = closesocket (s);
+        wsa_assert (rc != SOCKET_ERROR);
 #else
-		int rc = close (s);
+        int rc = close (s);
         errno_assert (rc == 0);
 #endif
-		s = retired_fd;
+        s = retired_fd;
     }
 
     if (encoder != NULL)
@@ -120,6 +120,8 @@ zmq::stream_engine_t::~stream_engine_t ()
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     session_base_t *session_)
 {
+    if (s==retired_fd) // attempt to avoid crash (during shutdown?)
+        return;
     zmq_assert (!plugged);
     plugged = true;
 
@@ -475,7 +477,7 @@ int zmq::stream_engine_t::write (const void *data_, size_t size_)
     //  we'll get an error (this may happen during the speculative write).
     if (nbytes == SOCKET_ERROR && WSAGetLastError () == WSAEWOULDBLOCK)
         return 0;
-		
+        
     //  Signalise peer failure.
     if (nbytes == SOCKET_ERROR && (
           WSAGetLastError () == WSAENETDOWN ||
