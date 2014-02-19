@@ -311,8 +311,7 @@ void zmq::tcp_connecter_t::close ()
     int rc = closesocket (s);
     wsa_assert (rc != SOCKET_ERROR);
 #else
-    int rc = ::close (s);
-    errno_assert (rc == 0);
+    ::close (s);
 #endif
     socket->event_closed (endpoint, s);
     s = retired_fd;

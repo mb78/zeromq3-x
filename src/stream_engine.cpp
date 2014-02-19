@@ -120,8 +120,11 @@ zmq::stream_engine_t::~stream_engine_t ()
 void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
     session_base_t *session_)
 {
-    if (s==retired_fd) // attempt to avoid crash (during shutdown?)
+    if (s==retired_fd || fcntl(s,F_GETFD)==-1)
+    {
+        fprintf(stderr,"stream_engine_t::plug() invalid FD=%d found\n",s);
         return;
+    }
     zmq_assert (!plugged);
     plugged = true;
 
